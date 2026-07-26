@@ -31,11 +31,14 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.marcm.cadencia.KuseApp
+import com.marcm.cadencia.ui.components.BannerActualizacion
 import com.marcm.cadencia.ui.components.ConfettiOverlay
 import com.marcm.cadencia.ui.components.DomainFilterChips
 import com.marcm.cadencia.ui.components.ProgressCard
@@ -52,6 +55,11 @@ fun TodayScreen(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     var showCelebration by remember { mutableStateOf(false) }
+
+    // El actualizador vive en la Application: su estado sobrevive a la navegación y a
+    // la recomposición, así que la pantalla solo lo observa.
+    val app = LocalContext.current.applicationContext as KuseApp
+    val estadoActualizacion by app.actualizador.estado.collectAsStateWithLifecycle()
 
     LaunchedEffect(Unit) {
         viewModel.celebrate.collect { showCelebration = true }
@@ -78,6 +86,14 @@ fun TodayScreen(
                         style = MaterialTheme.typography.displaySmall
                     )
                 }
+            }
+
+            item("actualizacion") {
+                BannerActualizacion(
+                    estado = estadoActualizacion,
+                    onActualizar = { app.actualizador.actualizarAhora() },
+                    modifier = Modifier.padding(horizontal = 18.dp, vertical = 2.dp)
+                )
             }
 
             item("progreso") {
