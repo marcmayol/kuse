@@ -1,0 +1,61 @@
+Kuse — Licencia de código visible (source-available)
+Copyright (c) 2026 Marc Mayol. Todos los derechos reservados.
+
+
+ESPAÑOL
+
+Este código se publica para que pueda VERSE, no para que pueda usarse.
+
+Se permite leerlo, estudiarlo, citarlo y enlazarlo con fines informativos o
+educativos.
+
+No se concede ninguna otra licencia ni derecho. En particular, salvo permiso
+previo y por escrito del titular, queda prohibido:
+
+  - copiar, reproducir o redistribuir el código o cualquier parte de él, más
+    allá de la copia técnica que el navegador o el cliente de git realiza para
+    poder leerlo;
+  - modificar, traducir o crear obras derivadas;
+  - compilar, ejecutar o distribuir la aplicación resultante;
+  - incorporar el código, total o parcialmente, en otro proyecto, propio o
+    ajeno, comercial o no;
+  - usarlo como material de entrenamiento de modelos de aprendizaje automático.
+
+Estas restricciones alcanzan únicamente al código original de este repositorio.
+Las bibliotecas de terceros que utiliza (AndroidX, Jetpack Compose, Room y
+demás) se rigen por sus propias licencias.
+
+EL SOFTWARE SE PROPORCIONA "TAL CUAL", SIN GARANTÍA DE NINGÚN TIPO, EXPRESA O
+IMPLÍCITA. EL TITULAR NO RESPONDE DE NINGÚN DAÑO DERIVADO DEL SOFTWARE O DE SU
+USO.
+
+Para solicitar permiso: https://marcmayol.com
+
+
+ENGLISH
+
+This source code is published to be READ, not to be used.
+
+You may read, study, quote and link to it for informational or educational
+purposes.
+
+No other licence or right is granted. In particular, without the prior written
+permission of the copyright holder, you may not:
+
+  - copy, reproduce or redistribute the code or any part of it, beyond the
+    technical copy your browser or git client makes in order to read it;
+  - modify, translate or create derivative works;
+  - build, run or distribute the resulting application;
+  - incorporate the code, in whole or in part, into any other project, whether
+    your own or someone else's, commercial or not;
+  - use it as training material for machine learning models.
+
+These restrictions apply only to the original code in this repository.
+Third-party libraries it depends on (AndroidX, Jetpack Compose, Room and others)
+are governed by their own licences.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED. THE COPYRIGHT HOLDER SHALL NOT BE LIABLE FOR ANY DAMAGES ARISING FROM
+THE SOFTWARE OR ITS USE.
+
+To request permission: https://marcmayol.com
