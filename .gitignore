@@ -1,0 +1,29 @@
+# Android / Gradle
+*.iml
+.gradle/
+/local.properties
+local.properties
+/.idea/
+.DS_Store
+/build/
+/captures/
+.externalNativeBuild/
+.cxx/
+/app/build/
+/actualizador/build/
+build/
+
+# Firmas (nunca versionar)
+*.jks
+*.keystore
+keystore.properties
+
+# Datos personales / backups de la app (nunca versionar)
+*.db
+*.db-*
+*.sqlite*
+*backup*/
+*.bak
+
+# APKs sueltos: los binarios viajan como asset de la Release, no en el repo
+*.apk

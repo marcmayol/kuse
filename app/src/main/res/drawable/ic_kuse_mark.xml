@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Marca de Kuse: anillo abierto (el ciclo que se repite) con la rama y la hoja.
+  Trazado a partir de icons/kuse-mark.svg del handoff, en su viewBox original 100x100.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="96dp"
+    android:height="96dp"
+    android:viewportWidth="100"
+    android:viewportHeight="100">
+
+    <group
+        android:name="anillo"
+        android:pivotX="50"
+        android:pivotY="46"
+        android:rotation="100">
+        <path
+            android:pathData="M80,46 A30,30 0 1,1 20,46 A30,30 0 1,1 80,46"
+            android:strokeColor="#D64C4C"
+            android:strokeWidth="4.6"
+            android:strokeLineCap="round"
+            android:trimPathStart="0"
+            android:trimPathEnd="0.8334" />
+    </group>
+
+    <path
+        android:pathData="M40,26 V67"
+        android:strokeColor="#D64C4C"
+        android:strokeWidth="4.6"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M40,47 L62,28"
+        android:strokeColor="#D64C4C"
+        android:strokeWidth="4.6"
+        android:strokeLineCap="round" />
+    <path
+        android:pathData="M40,47 C50,57 56,65 62,69 C65.5,71.2 69,70.5 72.98,65.28"
+        android:strokeColor="#D64C4C"
+        android:strokeWidth="4.6"
+        android:strokeLineCap="round" />
+
+    <path
+        android:pathData="M58,63 C58.5,55 64,50.5 72,50 C71,58 66,62 58,63 Z"
+        android:fillColor="#D64C4C" />
+    <path
+        android:pathData="M60,61.5 L70.5,51.5"
+        android:strokeColor="#101316"
+        android:strokeWidth="1.3"
+        android:strokeLineCap="round"
+        android:strokeAlpha="0.45" />
+</vector>

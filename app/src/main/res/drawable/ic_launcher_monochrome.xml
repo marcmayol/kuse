@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Capa monocroma del adaptive icon (iconos temáticos de Android 13+). El sistema sólo
+  usa el alfa, así que va en blanco. La marca queda dentro de la zona segura de 66dp:
+  centrada en (54,54) con radio efectivo ~29.5dp.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <group
+        android:scaleX="0.913"
+        android:scaleY="0.913"
+        android:translateX="8.35"
+        android:translateY="12.01">
+
+        <group
+            android:pivotX="50"
+            android:pivotY="46"
+            android:rotation="100">
+            <path
+                android:pathData="M80,46 A30,30 0 1,1 20,46 A30,30 0 1,1 80,46"
+                android:strokeColor="#FFFFFF"
+                android:strokeWidth="4.6"
+                android:strokeLineCap="round"
+                android:trimPathStart="0"
+                android:trimPathEnd="0.8334" />
+        </group>
+
+        <path
+            android:pathData="M40,26 V67"
+            android:strokeColor="#FFFFFF"
+            android:strokeWidth="4.6"
+            android:strokeLineCap="round" />
+        <path
+            android:pathData="M40,47 L62,28"
+            android:strokeColor="#FFFFFF"
+            android:strokeWidth="4.6"
+            android:strokeLineCap="round" />
+        <path
+            android:pathData="M40,47 C50,57 56,65 62,69 C65.5,71.2 69,70.5 72.98,65.28"
+            android:strokeColor="#FFFFFF"
+            android:strokeWidth="4.6"
+            android:strokeLineCap="round" />
+        <path
+            android:pathData="M58,63 C58.5,55 64,50.5 72,50 C71,58 66,62 58,63 Z"
+            android:fillColor="#FFFFFF" />
+    </group>
+</vector>
