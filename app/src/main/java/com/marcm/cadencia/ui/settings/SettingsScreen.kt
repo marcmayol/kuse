@@ -23,9 +23,11 @@ import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material.icons.filled.PhoneAndroid
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
@@ -33,6 +35,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -43,6 +46,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.marcm.actualizador.EstadoActualizacion
+import com.marcm.actualizador.Modo
+import com.marcm.actualizador.TipoError
+import com.marcm.cadencia.BuildConfig
+import com.marcm.cadencia.KuseApp
 import com.marcm.cadencia.domain.model.Domain
 import com.marcm.cadencia.settings.ThemeMode
 import com.marcm.cadencia.ui.components.DomainIconBox
@@ -50,7 +58,9 @@ import com.marcm.cadencia.ui.onboarding.CreateDomainDialog
 import com.marcm.cadencia.ui.theme.Accent
 import com.marcm.cadencia.ui.theme.AccentInk
 import com.marcm.cadencia.ui.theme.color
+import com.marcm.cadencia.ui.theme.Overdue
 import com.marcm.cadencia.ui.theme.containerColor
+import kotlinx.coroutines.launch
 
 @Composable
 fun SettingsScreen(
@@ -169,9 +179,12 @@ fun SettingsScreen(
             }
         }
 
+        SectionTitle("ACTUALIZACIONES")
+        SeccionActualizaciones()
+
         SectionTitle("ACERCA DE")
         Text(
-            "Kuse · versión 2.0\n癖 — lo que haces sin pensarlo.",
+            "Kuse · versión ${BuildConfig.VERSION_NAME}\n癖 — lo que haces sin pensarlo.",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.padding(start = 4.dp)
@@ -187,6 +200,107 @@ fun SettingsScreen(
             }
         )
     }
+}
+
+/**
+ * Único punto donde la comprobación de actualizaciones es manual, y el único sitio
+ * donde se informa de errores o del "estás al día": aquí el usuario ha preguntado.
+ */
+@Composable
+private fun SeccionActualizaciones() {
+    val app = LocalContext.current.applicationContext as KuseApp
+    val actualizador = app.actualizador
+    val scope = rememberCoroutineScope()
+    val estado by actualizador.estado.collectAsStateWithLifecycle()
+    var buscarAuto by remember { mutableStateOf(actualizador.buscarAutomaticamente) }
+
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(20.dp))
+            .background(MaterialTheme.colorScheme.surface)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(13.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+        ) {
+            Icon(
+                Icons.Filled.Refresh,
+                null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(22.dp)
+            )
+            Column(Modifier.weight(1f)) {
+                Text(
+                    "Buscar actualizaciones",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Medium
+                )
+                Text(
+                    "Comprueba de vez en cuando si hay una versión nueva",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Switch(
+                checked = buscarAuto,
+                onCheckedChange = {
+                    buscarAuto = it
+                    actualizador.buscarAutomaticamente = it
+                },
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = AccentInk,
+                    checkedTrackColor = Accent
+                )
+            )
+        }
+
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
+        ) {
+            OutlinedButton(
+                onClick = { scope.launch { actualizador.comprobar(Modo.MANUAL) } },
+                enabled = estado != EstadoActualizacion.Comprobando,
+                shape = RoundedCornerShape(18.dp)
+            ) {
+                Text("Buscar ahora")
+            }
+            Text(
+                text = mensajeDe(estado),
+                style = MaterialTheme.typography.bodyMedium,
+                color = if (estado is EstadoActualizacion.Error) Overdue
+                else MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.weight(1f)
+            )
+        }
+    }
+}
+
+/** Traducción del estado a la frase que ve el usuario en Ajustes. */
+private fun mensajeDe(estado: EstadoActualizacion): String = when (estado) {
+    EstadoActualizacion.Comprobando -> "Comprobando…"
+    EstadoActualizacion.AlDia -> "Estás al día"
+    is EstadoActualizacion.Disponible -> "Hay una versión nueva: ${estado.info.versionName}"
+    is EstadoActualizacion.Descargando -> "Descargando… ${estado.porcentaje} %"
+    EstadoActualizacion.Verificando -> "Comprobando el archivo…"
+    EstadoActualizacion.PidiendoPermiso -> "Falta el permiso para instalar"
+    EstadoActualizacion.Instalando -> "Instalando…"
+    is EstadoActualizacion.Error -> when (estado.tipo) {
+        TipoError.SIN_RED -> "Sin conexión"
+        TipoError.HTTP -> "El servidor no responde"
+        TipoError.MANIFIESTO -> "No se pudo leer la información de versiones"
+        TipoError.DESCARGA -> "No se pudo descargar la actualización"
+        TipoError.HASH -> "El archivo descargado no era válido"
+        TipoError.INSTALACION -> estado.mensaje ?: "No se pudo instalar"
+    }
+    EstadoActualizacion.Inactivo -> ""
 }
 
 @Composable
