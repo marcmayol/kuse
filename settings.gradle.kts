@@ -21,3 +21,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "Kuse"
 include(":app")
+include(":actualizador")
