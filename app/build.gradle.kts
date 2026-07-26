@@ -1,8 +1,28 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("com.google.devtools.ksp")
 }
+
+// Firma de release. Los secretos NUNCA se versionan: salen de keystore.properties
+// (en la raíz, gitignored) o de las variables de entorno KUSE_STORE_FILE,
+// KUSE_STORE_PASSWORD, KUSE_KEY_ALIAS y KUSE_KEY_PASSWORD. Si no hay ninguna de las
+// dos fuentes se cae al debug.keystore, para que cualquiera pueda compilar el
+// proyecto; ese APK no sirve para publicar (firma distinta = no actualiza encima).
+val keystorePropsFile = rootProject.file("keystore.properties")
+val keystoreProps = Properties().apply {
+    if (keystorePropsFile.exists()) FileInputStream(keystorePropsFile).use { load(it) }
+}
+
+fun datoFirma(clave: String, variableEntorno: String): String? =
+    (keystoreProps[clave] as String?)?.takeIf { it.isNotBlank() }
+        ?: System.getenv(variableEntorno)?.takeIf { it.isNotBlank() }
+
+val storeFileKuse = datoFirma("storeFile", "KUSE_STORE_FILE")
+val usaKeystoreRelease = storeFileKuse != null
 
 android {
     namespace = "com.marcm.cadencia"
@@ -12,14 +32,31 @@ android {
         applicationId = "com.marcm.cadencia"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 2
+        versionName = "2.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables { useSupportLibrary = true }
     }
 
+    signingConfigs {
+        create("release") {
+            if (usaKeystoreRelease) {
+                storeFile = file(storeFileKuse!!)
+                storePassword = datoFirma("storePassword", "KUSE_STORE_PASSWORD")
+                keyAlias = datoFirma("keyAlias", "KUSE_KEY_ALIAS")
+                keyPassword = datoFirma("keyPassword", "KUSE_KEY_PASSWORD")
+            } else {
+                storeFile = file("${System.getProperty("user.home")}/.android/debug.keystore")
+                storePassword = "android"
+                keyAlias = "androiddebugkey"
+                keyPassword = "android"
+            }
+        }
+    }
+
     buildTypes {
         release {
+            signingConfig = signingConfigs.getByName("release")
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
