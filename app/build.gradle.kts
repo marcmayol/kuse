@@ -39,6 +39,8 @@ android {
     }
     buildFeatures {
         compose = true
+        // El actualizador compara contra BuildConfig.VERSION_CODE.
+        buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = "1.5.8"
@@ -55,6 +57,8 @@ ksp {
 }
 
 dependencies {
+    implementation(project(":actualizador"))
+
     val composeBom = platform("androidx.compose:compose-bom:2024.02.00")
     implementation(composeBom)
     androidTestImplementation(composeBom)

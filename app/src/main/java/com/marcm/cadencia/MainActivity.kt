@@ -16,10 +16,14 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.Box
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.lifecycleScope
+import com.marcm.actualizador.Modo
 import com.marcm.cadencia.settings.ThemeMode
 import com.marcm.cadencia.ui.navigation.KuseNavHost
 import com.marcm.cadencia.ui.navigation.Routes
 import com.marcm.cadencia.ui.theme.KuseTheme
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -27,6 +31,13 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
 
         val settings = (application as KuseApp).container.settingsRepository
+
+        // Comprobación de actualizaciones al abrir: con retardo para no competir con
+        // el arranque, y muda ante cualquier fallo (modo automático).
+        lifecycleScope.launch {
+            delay(4_000)
+            (application as KuseApp).actualizador.comprobar(Modo.AUTOMATICO)
+        }
 
         setContent {
             val themeMode by settings.themeMode.collectAsStateWithLifecycle(initialValue = ThemeMode.DARK)
@@ -55,5 +66,12 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Reanuda el flujo si el usuario acaba de conceder el permiso de instalación,
+        // o deshace el "Instalando…" cuando la instalación se delegó al sistema.
+        (application as KuseApp).actualizador.onPermisoQuizaConcedido()
     }
 }

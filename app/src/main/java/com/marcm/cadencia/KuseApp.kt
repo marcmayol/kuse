@@ -1,6 +1,8 @@
 package com.marcm.cadencia
 
 import android.app.Application
+import com.marcm.actualizador.Actualizador
+import com.marcm.actualizador.ActualizadorConfig
 import com.marcm.cadencia.data.local.KuseDatabase
 import com.marcm.cadencia.data.repository.DomainRepository
 import com.marcm.cadencia.data.repository.TaskRepository
@@ -26,9 +28,31 @@ class KuseApp : Application() {
     lateinit var container: AppContainer
         private set
 
+    /**
+     * Auto-actualización: Kuse se distribuye fuera de Play Store, así que consulta un
+     * manifiesto estático en GitHub Pages (nunca la API de GitHub) y se compara por
+     * versionCode entero.
+     */
+    val actualizador: Actualizador by lazy {
+        Actualizador(
+            app = this,
+            config = ActualizadorConfig(
+                manifiestoUrl = MANIFIESTO_URL,
+                versionCodeActual = BuildConfig.VERSION_CODE,
+                checkHorasPorDefecto = 24,
+            ),
+        )
+    }
+
     override fun onCreate() {
         super.onCreate()
         container = AppContainer(this)
         NotificationHelper.ensureChannel(this)
+        // Comprobación periódica en segundo plano (WorkManager, solo con red).
+        actualizador.programarPeriodica()
+    }
+
+    companion object {
+        const val MANIFIESTO_URL = "https://marcmayol.com/kuse/updates.json"
     }
 }
