@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Kuse</title>
+  <meta name="description" content="App Android para mantener al día tus hábitos recurrentes: higiene, hogar, ejercicio y mascotas. Sin cuentas y sin nube." />
+  <style>
+    :root {
+      --bg: #101316; --card: #1a1e20; --ink: #e6e8e8; --muted: #8a9290;
+      --accent: #d64c4c; --line: #2a2f31;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+      line-height: 1.55;
+    }
+    .envoltorio { max-width: 46rem; margin: 0 auto; padding: 4rem 1.25rem 5rem; }
+    .marca { display: flex; align-items: center; gap: .75rem; margin-bottom: 2.5rem; }
+    .marca svg { width: 44px; height: 44px; }
+    .marca span { font-size: 1.6rem; font-weight: 300; letter-spacing: .12em; }
+    h1 { font-size: clamp(2rem, 6vw, 2.8rem); line-height: 1.15; margin: 0 0 1rem; }
+    p.entrada { color: var(--muted); font-size: 1.1rem; margin: 0 0 2.5rem; }
+    .tarjeta {
+      background: var(--card); border: 1px solid var(--line);
+      border-radius: 20px; padding: 1.5rem; margin-bottom: 1rem;
+    }
+    .tarjeta h2 { margin: 0 0 .5rem; font-size: 1.1rem; }
+    .tarjeta p { margin: 0; color: var(--muted); }
+    .boton {
+      display: inline-block; background: var(--accent); color: var(--bg);
+      text-decoration: none; font-weight: 600; padding: .85rem 1.5rem;
+      border-radius: 99px; margin-top: 1rem;
+    }
+    ul { color: var(--muted); padding-left: 1.1rem; }
+    li { margin-bottom: .4rem; }
+    footer { color: var(--muted); font-size: .9rem; margin-top: 3rem; }
+    a { color: var(--accent); }
+  </style>
+</head>
+<body>
+  <div class="envoltorio">
+    <div class="marca">
+      <svg viewBox="0 0 100 100" aria-hidden="true">
+        <g fill="none" stroke="#d64c4c" stroke-width="4.6" stroke-linecap="round">
+          <circle cx="50" cy="46" r="30" stroke-dasharray="157.1 31.4" transform="rotate(100 50 46)"></circle>
+          <path d="M40 26 V67"></path>
+          <path d="M40 47 L62 28"></path>
+          <path d="M40 47 C50 57 56 65 62 69 C65.5 71.2 69 70.5 72.98 65.28"></path>
+        </g>
+        <path d="M58 63 C58.5 55 64 50.5 72 50 C71 58 66 62 58 63 Z" fill="#d64c4c"></path>
+      </svg>
+      <span>Kuse</span>
+    </div>
+
+    <h1>Lo que haces sin pensarlo, al día.</h1>
+    <p class="entrada">
+      癖 <em>kuse</em>: hábito, costumbre. Una app Android para llevar el ritmo de lo que
+      se repite — higiene, hogar, ejercicio, mascotas — sin cuentas, sin nube y sin
+      que nada salga de tu móvil.
+    </p>
+
+    <div class="tarjeta">
+      <h2>Descargar</h2>
+      <p>APK firmado, fuera de Play Store. Una vez instalado, la app se actualiza sola.</p>
+      <a class="boton" href="https://github.com/marcmayol/kuse/releases/latest">Última versión</a>
+    </div>
+
+    <div class="tarjeta">
+      <h2>Qué hace</h2>
+      <ul>
+        <li>Ámbitos con sus propias tareas: higiene, hogar, ejercicio, mascotas o el tuyo.</li>
+        <li>Recurrencias de verdad: cada N días, días concretos de la semana, mensual.</li>
+        <li>Lo vencido sigue vencido, con los días de atraso a la vista.</li>
+        <li>Recordatorios agrupados por ámbito para no llenarte la barra de avisos.</li>
+        <li>Rachas y porcentaje de veces que llegaste a tiempo.</li>
+      </ul>
+    </div>
+
+    <footer>
+      Hecho por <a href="https://marcmayol.com">Marc Mayol</a>.
+    </footer>
+  </div>
+</body>
+</html>
