@@ -1,0 +1,8 @@
+{
+  "versionCode": 2,
+  "versionName": "2.0",
+  "url": "https://github.com/marcmayol/kuse/releases/download/v2.0/kuse-v2.0.apk",
+  "sha256": "b6dfc3493f464f61c606906258980d4b04a606fe2ecedbb7fac73ff0e3658621",
+  "notas": "Kuse 2.0: hábitos recurrentes multi-ámbito, notificaciones agrupadas por ámbito y auto-actualización dentro de la app.",
+  "check_horas": 24
+}
