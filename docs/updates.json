@@ -1,8 +1,8 @@
 {
-  "versionCode": 3,
-  "versionName": "2.1",
-  "url": "https://github.com/marcmayol/kuse/releases/download/v2.1/kuse-v2.1.apk",
-  "sha256": "b7f56e3ecccd80898df9d12a287d04a444eb903fe934cc3b9b2d269a34a51919",
-  "notas": "Versión de prueba de la auto-actualización: sin cambios funcionales respecto a la 2.0.",
+  "versionCode": 4,
+  "versionName": "2.2",
+  "url": "https://github.com/marcmayol/kuse/releases/download/v2.2/kuse-v2.2.apk",
+  "sha256": "744203544469dec1f8215394dbeaf7a0d430839c899976d74b90b5fc6c92a9e4",
+  "notas": "La pantalla de nueva tarea ya muestra los cuatro ambitos y deja crearte uno propio sin pasar por Ajustes.",
   "check_horas": 24
 }
