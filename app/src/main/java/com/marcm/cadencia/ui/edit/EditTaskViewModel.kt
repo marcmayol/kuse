@@ -85,7 +85,9 @@ class EditTaskViewModel(
 
     init {
         viewModelScope.launch {
-            val domains = domainRepo.getActive().ifEmpty { domainRepo.getAll() }
+            // Todos los ámbitos, activos o no: aquí se elige dónde vive la tarea, y un
+            // ámbito apagado sigue siendo un destino válido (al guardar se enciende).
+            val domains = domainRepo.getAll()
             val existing = if (taskId > 0L) taskRepo.getTask(taskId) else null
             editing = existing?.task
 
@@ -93,7 +95,8 @@ class EditTaskViewModel(
                 if (existing == null) {
                     state.copy(
                         domains = domains,
-                        selectedDomainId = domains.firstOrNull()?.id,
+                        // Por defecto, uno que el usuario ya use; si no hay ninguno, el primero.
+                        selectedDomainId = (domains.firstOrNull { it.isActive } ?: domains.firstOrNull())?.id,
                         loaded = true
                     )
                 } else {
@@ -127,6 +130,17 @@ class EditTaskViewModel(
 
     fun setName(value: String) = _uiState.update { it.copy(name = value) }
     fun setDomain(id: Long) = _uiState.update { it.copy(selectedDomainId = id) }
+
+    /**
+     * Crea un ámbito propio desde esta pantalla y lo deja elegido. Nace activo, así que
+     * la tarea que se está creando aparecerá en Hoy sin pasar por Ajustes.
+     */
+    fun createCustomDomain(name: String, colorHex: String, iconKey: String) {
+        viewModelScope.launch {
+            val id = domainRepo.createCustomDomain(name, colorHex, iconKey)
+            _uiState.update { it.copy(domains = domainRepo.getAll(), selectedDomainId = id) }
+        }
+    }
     fun setTab(tab: RecurrenceTab) = _uiState.update { it.copy(tab = tab) }
     fun setAnchor(mode: AnchorMode) = _uiState.update { it.copy(anchorMode = mode) }
     fun setReminderEnabled(enabled: Boolean) = _uiState.update { it.copy(reminderEnabled = enabled) }
@@ -161,6 +175,16 @@ class EditTaskViewModel(
 
         viewModelScope.launch {
             val current = editing
+            // Si la tarea va a un ámbito apagado, se enciende: si no, nacería invisible.
+            // Se activa "en seco", sin sembrar las sugeridas de fábrica; aquí el usuario
+            // pidió una tarea concreta, no la rutina entera del ámbito.
+            if (state.domains.firstOrNull { it.id == domainId }?.isActive == false) {
+                domainRepo.setActive(domainId, true)
+                _uiState.update { s ->
+                    s.copy(domains = s.domains.map { if (it.id == domainId) it.copy(isActive = true) else it })
+                }
+            }
+
             val categoryId = resolveCategoryId(domainId, current)
             val today = LocalDate.now()
 

@@ -37,6 +37,22 @@
     }
     ul { color: var(--muted); padding-left: 1.1rem; }
     li { margin-bottom: .4rem; }
+    .ambitos {
+      display: grid; gap: .6rem; margin-top: 1rem;
+      grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+    }
+    .ambito {
+      display: flex; align-items: center; gap: .7rem;
+      background: #16191b; border: 1px solid var(--line);
+      border-radius: 15px; padding: .75rem .9rem;
+    }
+    .ambito .marca-color {
+      width: 30px; height: 30px; border-radius: 10px; flex: none;
+      display: grid; place-items: center; font-size: .95rem;
+    }
+    .ambito b { font-weight: 500; font-size: .95rem; }
+    .ambito small { display: block; color: var(--muted); font-size: .8rem; }
+    .ambito.propio { border-style: dashed; }
     footer { color: var(--muted); font-size: .9rem; margin-top: 3rem; }
     a { color: var(--accent); }
   </style>
@@ -67,6 +83,33 @@
       <h2>Descargar</h2>
       <p>APK firmado, fuera de Play Store. Una vez instalado, la app se actualiza sola.</p>
       <a class="boton" href="https://github.com/marcmayol/kuse/releases/latest">Última versión</a>
+    </div>
+
+    <div class="tarjeta">
+      <h2>Ámbitos</h2>
+      <p>Cada ámbito trae sus tareas sugeridas y se activa por separado. Y si te falta uno, te lo creas con su nombre, su color y su icono.</p>
+      <div class="ambitos">
+        <div class="ambito">
+          <span class="marca-color" style="background: rgba(111, 216, 192, .15); color: #6fd8c0;">✦</span>
+          <span><b>Higiene y grooming</b><small>Dental, afeitado, piel</small></span>
+        </div>
+        <div class="ambito">
+          <span class="marca-color" style="background: rgba(240, 185, 94, .15); color: #f0b95e;">⌂</span>
+          <span><b>Hogar</b><small>Ropa, sábanas, limpieza</small></span>
+        </div>
+        <div class="ambito">
+          <span class="marca-color" style="background: rgba(143, 182, 255, .15); color: #8fb6ff;">◈</span>
+          <span><b>Ejercicio</b><small>Fuerza, cardio, movilidad</small></span>
+        </div>
+        <div class="ambito">
+          <span class="marca-color" style="background: rgba(201, 166, 255, .15); color: #c9a6ff;">❖</span>
+          <span><b>Mascotas</b><small>Antiparasitario, baño, arenero</small></span>
+        </div>
+        <div class="ambito propio">
+          <span class="marca-color" style="background: #1a1e20; color: #8a9290;">+</span>
+          <span><b>Ámbito propio</b><small>Coche, papeleo, plantas…</small></span>
+        </div>
+      </div>
     </div>
 
     <div class="tarjeta">

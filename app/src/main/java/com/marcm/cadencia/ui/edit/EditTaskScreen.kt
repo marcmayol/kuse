@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -35,9 +37,17 @@ import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -46,6 +56,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.marcm.cadencia.domain.model.AnchorMode
 import com.marcm.cadencia.domain.model.Domain
 import com.marcm.cadencia.ui.components.DomainIconBox
+import com.marcm.cadencia.ui.onboarding.CreateDomainDialog
 import com.marcm.cadencia.ui.components.timeLabel
 import com.marcm.cadencia.ui.components.weekdayInitial
 import com.marcm.cadencia.ui.theme.Accent
@@ -62,6 +73,7 @@ fun EditTaskScreen(
 ) {
     val state by viewModel.uiState.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    var showCreateDomain by remember { mutableStateOf(false) }
 
     Box(
         Modifier
@@ -97,7 +109,8 @@ fun EditTaskScreen(
             DomainGrid(
                 domains = state.domains,
                 selectedId = state.selectedDomainId,
-                onSelect = viewModel::setDomain
+                onSelect = viewModel::setDomain,
+                onCreateDomain = { showCreateDomain = true }
             )
 
             SectionLabel("CADA CUÁNTO")
@@ -212,6 +225,16 @@ fun EditTaskScreen(
             }
         }
     }
+
+    if (showCreateDomain) {
+        CreateDomainDialog(
+            onDismiss = { showCreateDomain = false },
+            onCreate = { name, color, icon ->
+                viewModel.createCustomDomain(name, color, icon)
+                showCreateDomain = false
+            }
+        )
+    }
 }
 
 @Composable
@@ -224,23 +247,96 @@ private fun SectionLabel(text: String) {
     )
 }
 
-/** Rejilla 2×2 de ámbitos (crece en filas de dos si hay más). */
+/**
+ * Rejilla 2×2 de ámbitos (crece en filas de dos si hay más), con una celda final para
+ * crear un ámbito propio. Se listan todos, activos o no: elegir uno apagado lo enciende
+ * al guardar. El `null` de la última posición es esa celda de "ámbito propio".
+ */
 @Composable
-private fun DomainGrid(domains: List<Domain>, selectedId: Long?, onSelect: (Long) -> Unit) {
+private fun DomainGrid(
+    domains: List<Domain>,
+    selectedId: Long?,
+    onSelect: (Long) -> Unit,
+    onCreateDomain: () -> Unit
+) {
+    val cells: List<Domain?> = domains + null
+
     Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-        domains.chunked(2).forEach { row ->
-            Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        cells.chunked(2).forEach { row ->
+            // Altura mínima intrínseca: las dos celdas de la fila igualan a la más alta,
+            // que los nombres largos ocupan dos líneas.
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(10.dp),
+                modifier = Modifier.height(IntrinsicSize.Min)
+            ) {
                 row.forEach { domain ->
-                    DomainCell(
-                        domain = domain,
-                        selected = domain.id == selectedId,
-                        onClick = { onSelect(domain.id) },
-                        modifier = Modifier.weight(1f)
-                    )
+                    if (domain == null) {
+                        NewDomainCell(
+                            onClick = onCreateDomain,
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight()
+                        )
+                    } else {
+                        DomainCell(
+                            domain = domain,
+                            selected = domain.id == selectedId,
+                            onClick = { onSelect(domain.id) },
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight()
+                        )
+                    }
                 }
                 if (row.size == 1) Spacer(Modifier.weight(1f))
             }
         }
+    }
+}
+
+/** Celda de "ámbito propio": mismo formato que las demás, con borde discontinuo. */
+@Composable
+private fun NewDomainCell(onClick: () -> Unit, modifier: Modifier = Modifier) {
+    val stroke = MaterialTheme.colorScheme.outline
+
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+        modifier = modifier
+            .clip(RoundedCornerShape(18.dp))
+            .drawBehind {
+                drawRoundRect(
+                    brush = SolidColor(stroke),
+                    style = Stroke(
+                        width = 1.5.dp.toPx(),
+                        pathEffect = PathEffect.dashPathEffect(floatArrayOf(12f, 10f))
+                    ),
+                    cornerRadius = CornerRadius(18.dp.toPx())
+                )
+            }
+            .clickable(onClick = onClick)
+            .padding(12.dp)
+    ) {
+        Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier
+                .size(34.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(MaterialTheme.colorScheme.surfaceVariant)
+        ) {
+            Icon(
+                Icons.Filled.Add,
+                null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(18.dp)
+            )
+        }
+        Text(
+            "Ámbito propio",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            maxLines = 2
+        )
     }
 }
 
