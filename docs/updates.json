@@ -1,8 +1,8 @@
 {
-  "versionCode": 4,
-  "versionName": "2.2",
-  "url": "https://github.com/marcmayol/kuse/releases/download/v2.2/kuse-v2.2.apk",
-  "sha256": "744203544469dec1f8215394dbeaf7a0d430839c899976d74b90b5fc6c92a9e4",
-  "notas": "La pantalla de nueva tarea ya muestra los cuatro ambitos y deja crearte uno propio sin pasar por Ajustes.",
+  "versionCode": 5,
+  "versionName": "2.3",
+  "url": "https://github.com/marcmayol/kuse/releases/download/v2.3/kuse-v2.3.apk",
+  "sha256": "33d3f24f9a974a7068574eb99058071c341b7c34c082a2685e60f24166a6bfbe",
+  "notas": "Bloqueo de la app: ahora puedes exigir un PIN (y huella o cara) para abrir Kuse. En Ajustes > Seguridad eliges cuando volver a pedirlo, si quieres usar biometria como atajo y una pista por si lo olvidas.",
   "check_horas": 24
 }
