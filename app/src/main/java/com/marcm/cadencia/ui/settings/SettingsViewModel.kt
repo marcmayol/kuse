@@ -11,6 +11,9 @@ import com.marcm.cadencia.domain.model.BuiltInDomain
 import com.marcm.cadencia.domain.model.Domain
 import com.marcm.cadencia.domain.model.Presets
 import com.marcm.cadencia.notifications.ReminderScheduler
+import com.marcm.cadencia.security.AjustesBloqueo
+import com.marcm.cadencia.security.AppLockRepository
+import com.marcm.cadencia.security.Gracia
 import com.marcm.cadencia.settings.SettingsRepository
 import com.marcm.cadencia.settings.ThemeMode
 import com.marcm.cadencia.ui.appContainer
@@ -27,8 +30,33 @@ class SettingsViewModel(
     private val settings: SettingsRepository,
     private val domainRepo: DomainRepository,
     private val taskRepo: TaskRepository,
-    private val scheduler: ReminderScheduler
+    private val scheduler: ReminderScheduler,
+    private val lockRepo: AppLockRepository
 ) : ViewModel() {
+
+    val bloqueo: StateFlow<AjustesBloqueo> =
+        lockRepo.ajustes.stateIn(
+            viewModelScope,
+            SharingStarted.WhileSubscribed(5_000),
+            AjustesBloqueo()
+        )
+
+    /** Quitar el bloqueo borra el PIN: no queda un secreto viejo esperando. */
+    fun desactivarBloqueo() {
+        viewModelScope.launch { lockRepo.desactivar() }
+    }
+
+    fun setBiometria(activa: Boolean) {
+        viewModelScope.launch { lockRepo.setBiometria(activa) }
+    }
+
+    fun setGracia(gracia: Gracia) {
+        viewModelScope.launch { lockRepo.setGracia(gracia) }
+    }
+
+    fun setPista(pista: String) {
+        viewModelScope.launch { lockRepo.setPista(pista) }
+    }
 
     val themeMode: StateFlow<ThemeMode> =
         settings.themeMode.stateIn(
@@ -87,7 +115,8 @@ class SettingsViewModel(
                     container.settingsRepository,
                     container.domainRepository,
                     container.taskRepository,
-                    container.reminderScheduler
+                    container.reminderScheduler,
+                    container.appLockRepository
                 )
             }
         }

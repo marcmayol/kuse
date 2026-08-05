@@ -7,6 +7,7 @@ object Routes {
     const val PLAN = "plan"
     const val STREAKS = "streaks"
     const val SETTINGS = "settings"
+    const val PIN_SETUP = "pin_setup"
 
     const val DETAIL = "detail/{taskId}"
     fun detail(taskId: Long) = "detail/$taskId"

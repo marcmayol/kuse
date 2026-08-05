@@ -26,6 +26,7 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.marcm.cadencia.ui.detail.TaskDetailScreen
 import com.marcm.cadencia.ui.edit.EditTaskScreen
+import com.marcm.cadencia.ui.lock.PinSetupScreen
 import com.marcm.cadencia.ui.onboarding.OnboardingScreen
 import com.marcm.cadencia.ui.plan.PlanScreen
 import com.marcm.cadencia.ui.settings.SettingsScreen
@@ -129,7 +130,17 @@ fun KuseNavHost(startDestination: String) {
             }
 
             composable(Routes.SETTINGS) {
-                SettingsScreen(contentPadding = innerPadding)
+                SettingsScreen(
+                    contentPadding = innerPadding,
+                    onConfigurarPin = { navController.navigate(Routes.PIN_SETUP) }
+                )
+            }
+
+            composable(Routes.PIN_SETUP) {
+                PinSetupScreen(
+                    onListo = { navController.popBackStack() },
+                    onCancelar = { navController.popBackStack() }
+                )
             }
 
             composable(

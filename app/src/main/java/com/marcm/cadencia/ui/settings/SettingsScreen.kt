@@ -16,21 +16,28 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.HelpOutline
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.DarkMode
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Fingerprint
 import androidx.compose.material.icons.filled.LightMode
+import androidx.compose.material.icons.filled.Lock
 import androidx.compose.material.icons.filled.Notifications
+import androidx.compose.material.icons.filled.Password
 import androidx.compose.material.icons.filled.PhoneAndroid
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -52,6 +59,9 @@ import com.marcm.actualizador.TipoError
 import com.marcm.cadencia.BuildConfig
 import com.marcm.cadencia.KuseApp
 import com.marcm.cadencia.domain.model.Domain
+import com.marcm.cadencia.security.AjustesBloqueo
+import com.marcm.cadencia.security.Biometria
+import com.marcm.cadencia.security.Gracia
 import com.marcm.cadencia.settings.ThemeMode
 import com.marcm.cadencia.ui.components.DomainIconBox
 import com.marcm.cadencia.ui.onboarding.CreateDomainDialog
@@ -65,10 +75,12 @@ import kotlinx.coroutines.launch
 @Composable
 fun SettingsScreen(
     contentPadding: PaddingValues,
+    onConfigurarPin: () -> Unit,
     viewModel: SettingsViewModel = viewModel(factory = SettingsViewModel.Factory)
 ) {
     val theme by viewModel.themeMode.collectAsStateWithLifecycle()
     val domains by viewModel.domains.collectAsStateWithLifecycle()
+    val bloqueo by viewModel.bloqueo.collectAsStateWithLifecycle()
     val context = LocalContext.current
     var showCreate by remember { mutableStateOf(false) }
 
@@ -179,6 +191,17 @@ fun SettingsScreen(
             }
         }
 
+        SectionTitle("SEGURIDAD")
+        SeccionSeguridad(
+            bloqueo = bloqueo,
+            onActivar = onConfigurarPin,
+            onCambiarPin = onConfigurarPin,
+            onDesactivar = viewModel::desactivarBloqueo,
+            onBiometria = viewModel::setBiometria,
+            onGracia = viewModel::setGracia,
+            onPista = viewModel::setPista
+        )
+
         SectionTitle("ACTUALIZACIONES")
         SeccionActualizaciones()
 
@@ -199,6 +222,249 @@ fun SettingsScreen(
                 showCreate = false
             }
         )
+    }
+}
+
+/**
+ * Bloqueo de la app. El PIN se crea en su propia pantalla; aquí sólo se enciende,
+ * se apaga y se afinan la biometría, la gracia y la pista.
+ */
+@Composable
+private fun SeccionSeguridad(
+    bloqueo: AjustesBloqueo,
+    onActivar: () -> Unit,
+    onCambiarPin: () -> Unit,
+    onDesactivar: () -> Unit,
+    onBiometria: (Boolean) -> Unit,
+    onGracia: (Gracia) -> Unit,
+    onPista: (String) -> Unit,
+) {
+    val context = LocalContext.current
+    val hayBiometria = remember { Biometria.disponible(context) }
+    var confirmarQuitar by remember { mutableStateOf(false) }
+    var editandoPista by remember { mutableStateOf(false) }
+
+    Column(
+        Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(20.dp))
+            .background(MaterialTheme.colorScheme.surface)
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(13.dp),
+            modifier = Modifier.fillMaxWidth().padding(16.dp)
+        ) {
+            Icon(
+                Icons.Filled.Lock,
+                null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.size(22.dp)
+            )
+            Column(Modifier.weight(1f)) {
+                Text(
+                    "Bloquear la app",
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Medium
+                )
+                Text(
+                    "Pide un PIN para abrir Kuse",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            }
+            Switch(
+                checked = bloqueo.activo,
+                onCheckedChange = { activar ->
+                    if (activar) onActivar() else confirmarQuitar = true
+                },
+                colors = SwitchDefaults.colors(
+                    checkedThumbColor = AccentInk,
+                    checkedTrackColor = Accent
+                )
+            )
+        }
+
+        if (bloqueo.activo) {
+            FilaSeguridad(
+                icono = Icons.Filled.Password,
+                titulo = "Cambiar el PIN",
+                subtitulo = "Tiene ${bloqueo.longitudPin} dígitos",
+                onClick = onCambiarPin
+            )
+
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(13.dp),
+                modifier = Modifier.fillMaxWidth().padding(16.dp)
+            ) {
+                Icon(
+                    Icons.Filled.Fingerprint,
+                    null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(22.dp)
+                )
+                Column(Modifier.weight(1f)) {
+                    Text(
+                        "Huella o cara",
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Medium
+                    )
+                    Text(
+                        if (hayBiometria) "Atajo para no teclear el PIN"
+                        else "Este móvil no tiene biometría registrada",
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                Switch(
+                    checked = bloqueo.biometria && hayBiometria,
+                    enabled = hayBiometria,
+                    onCheckedChange = onBiometria,
+                    colors = SwitchDefaults.colors(
+                        checkedThumbColor = AccentInk,
+                        checkedTrackColor = Accent
+                    )
+                )
+            }
+
+            FilaSeguridad(
+                icono = Icons.AutoMirrored.Filled.HelpOutline,
+                titulo = "Pista de recuperación",
+                subtitulo = bloqueo.pista.ifBlank { "Sin pista" },
+                onClick = { editandoPista = true }
+            )
+        }
+    }
+
+    if (bloqueo.activo) {
+        Text(
+            "CUÁNDO VOLVER A PEDIRLO",
+            style = MaterialTheme.typography.labelMedium,
+            fontWeight = FontWeight.Bold,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(start = 4.dp, top = 20.dp, bottom = 10.dp)
+        )
+        Column(
+            Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(20.dp))
+                .background(MaterialTheme.colorScheme.surface)
+        ) {
+            Gracia.entries.forEach { gracia ->
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onGracia(gracia) }
+                        .padding(16.dp)
+                ) {
+                    Text(
+                        gracia.etiqueta,
+                        style = MaterialTheme.typography.titleMedium,
+                        fontWeight = FontWeight.Medium,
+                        modifier = Modifier.weight(1f)
+                    )
+                    if (bloqueo.gracia == gracia) {
+                        Icon(Icons.Filled.Check, null, tint = Accent, modifier = Modifier.size(22.dp))
+                    }
+                }
+            }
+        }
+        Text(
+            "Al abrir la app siempre pide el PIN. La espera sólo cuenta cuando sales " +
+                "y vuelves.",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.padding(start = 4.dp, top = 10.dp)
+        )
+    }
+
+    if (confirmarQuitar) {
+        AlertDialog(
+            onDismissRequest = { confirmarQuitar = false },
+            title = { Text("¿Quitar el bloqueo?") },
+            text = {
+                Text(
+                    "Se borrará el PIN y Kuse volverá a abrirse sin pedir nada."
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    confirmarQuitar = false
+                    onDesactivar()
+                }) { Text("Quitar", color = Overdue) }
+            },
+            dismissButton = {
+                TextButton(onClick = { confirmarQuitar = false }) { Text("Cancelar") }
+            }
+        )
+    }
+
+    if (editandoPista) {
+        var texto by remember { mutableStateOf(bloqueo.pista) }
+        AlertDialog(
+            onDismissRequest = { editandoPista = false },
+            title = { Text("Pista de recuperación") },
+            text = {
+                Column {
+                    OutlinedTextField(
+                        value = texto,
+                        onValueChange = { texto = it.take(60) },
+                        label = { Text("Pista (opcional)") },
+                        singleLine = true,
+                        shape = RoundedCornerShape(18.dp)
+                    )
+                    Text(
+                        "Se ve sin desbloquear la app: no escribas aquí el PIN.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = 10.dp)
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    onPista(texto)
+                    editandoPista = false
+                }) { Text("Guardar") }
+            },
+            dismissButton = {
+                TextButton(onClick = { editandoPista = false }) { Text("Cancelar") }
+            }
+        )
+    }
+}
+
+@Composable
+private fun FilaSeguridad(
+    icono: ImageVector,
+    titulo: String,
+    subtitulo: String,
+    onClick: () -> Unit,
+) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(13.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(16.dp)
+    ) {
+        Icon(
+            icono,
+            null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.size(22.dp)
+        )
+        Column(Modifier.weight(1f)) {
+            Text(titulo, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Medium)
+            Text(
+                subtitulo,
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
     }
 }
 

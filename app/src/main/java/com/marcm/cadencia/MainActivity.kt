@@ -3,7 +3,6 @@ package com.marcm.cadencia
 import android.Manifest
 import android.os.Build
 import android.os.Bundle
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -15,17 +14,26 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.foundation.layout.Box
+import androidx.fragment.app.FragmentActivity
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.lifecycleScope
 import com.marcm.actualizador.Modo
 import com.marcm.cadencia.settings.ThemeMode
+import com.marcm.cadencia.ui.lock.LockScreen
 import com.marcm.cadencia.ui.navigation.KuseNavHost
 import com.marcm.cadencia.ui.navigation.Routes
 import com.marcm.cadencia.ui.theme.KuseTheme
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-class MainActivity : ComponentActivity() {
+/**
+ * FragmentActivity (y no ComponentActivity a secas) porque BiometricPrompt lo exige
+ * para poder mostrarse; el resto de la app no nota la diferencia.
+ */
+class MainActivity : FragmentActivity() {
+
+    private val appLock get() = (application as KuseApp).container.appLockManager
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -43,6 +51,7 @@ class MainActivity : ComponentActivity() {
             val themeMode by settings.themeMode.collectAsStateWithLifecycle(initialValue = ThemeMode.DARK)
             val onboardingDone by settings.onboardingDone
                 .collectAsStateWithLifecycle<Boolean?>(initialValue = null)
+            val bloqueado by appLock.bloqueado.collectAsStateWithLifecycle()
 
             // Pide permiso de notificaciones una vez en Android 13+.
             val permissionLauncher = rememberLauncherForActivityResult(
@@ -56,16 +65,31 @@ class MainActivity : ComponentActivity() {
 
             KuseTheme(themeMode = themeMode) {
                 val done = onboardingDone
-                if (done == null) {
-                    // Estado inicial mientras se lee la preferencia.
+                val cerrado = bloqueado
+                if (done == null || cerrado == null) {
+                    // Estado inicial mientras se leen las preferencias. Mientras no se
+                    // sepa si hay bloqueo, no se dibuja nada del contenido.
                     Box(Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background))
                 } else {
                     KuseNavHost(
                         startDestination = if (done) Routes.TODAY else Routes.ONBOARDING
                     )
+                    // Encima de todo: ninguna ruta ni deep link puede esquivarla.
+                    if (cerrado) LockScreen()
                 }
             }
         }
+    }
+
+    override fun onStart() {
+        super.onStart()
+        appLock.alVolverAlFrente()
+    }
+
+    override fun onStop() {
+        super.onStop()
+        // Girar la pantalla recrea la Activity, pero eso no es salir de la app.
+        if (!isChangingConfigurations) appLock.alIrAlFondo()
     }
 
     override fun onResume() {
