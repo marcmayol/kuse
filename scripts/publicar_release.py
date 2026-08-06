@@ -1,7 +1,8 @@
 """Publica una release de Kuse y actualiza el manifiesto de actualizaciones.
 
 Ritual completo (hermano del de DracPDF, Grimorio de Salud y Crónicas del Apetito):
-build del APK de release FIRMADO, lectura del versionCode/versionName (fuente única:
+comprobación de que no hay código sin commitear (si no, el tag de la Release no
+contendría lo que se publica), build del APK de release FIRMADO, lectura del versionCode/versionName (fuente única:
 app/build.gradle.kts), cálculo del sha256, verificación de coherencia (el versionCode
 del APK construido, leído con aapt2, debe coincidir con el que se escribirá en el
 manifiesto y superar al ya publicado; la firma debe ser la de siempre y nunca la de
@@ -85,6 +86,39 @@ def sha256(ruta: Path) -> str:
 
 def _gradlew() -> str:
     return "gradlew.bat" if os.name == "nt" else "./gradlew"
+
+
+# Los únicos ficheros que el propio script toca: no cuentan como "cambios sueltos".
+_ARCHIVOS_DEL_SCRIPT = {"docs/updates.json", "scripts/firma_esperada.txt"}
+
+
+def asegurar_arbol_limpio() -> None:
+    """Aborta si queda código sin commitear.
+
+    El tag de la Release se crea sobre lo que hay en GitHub, así que publicar con
+    cambios en el working tree deja un tag que NO contiene el código de esa versión:
+    el APK lleva la funcionalidad y el repositorio no. Pasó de verdad con la v2.3.
+    """
+    pendientes = []
+    for linea in _salida(["git", "status", "--porcelain"]).splitlines():
+        if not linea.strip():
+            continue
+        ruta = linea[3:].strip().strip('"')
+        if " -> " in ruta:  # renombrados: "origen -> destino"
+            ruta = ruta.split(" -> ", 1)[1]
+        if ruta.rstrip("/") in _ARCHIVOS_DEL_SCRIPT:
+            continue
+        pendientes.append(ruta)
+
+    if pendientes:
+        lista = "\n".join(f"    {r}" for r in pendientes[:20])
+        resto = f"\n    …y {len(pendientes) - 20} más" if len(pendientes) > 20 else ""
+        raise SystemExit(
+            "Hay cambios sin commitear: la Release quedaría etiquetada sobre un "
+            "commit que no contiene este código.\n"
+            f"{lista}{resto}\n"
+            "  Commitea (o guarda en stash) y vuelve a publicar. Aborto."
+        )
 
 
 # --- versión (fuente única: build.gradle.kts) ---------------------------------
@@ -340,6 +374,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
 
     if not args.dry_run:
+        asegurar_arbol_limpio()
         verificar_gh()
 
     manifiesto, apk = preparar(args.notas)

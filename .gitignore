@@ -27,3 +27,6 @@ keystore.properties
 
 # APKs sueltos: los binarios viajan como asset de la Release, no en el repo
 *.apk
+
+# Python de los scripts de publicación
+__pycache__/
