@@ -4,6 +4,7 @@ package com.marcm.cadencia.ui.navigation
 object Routes {
     const val ONBOARDING = "onboarding"
     const val TODAY = "today"
+    const val ALL = "all"
     const val PLAN = "plan"
     const val STREAKS = "streaks"
     const val SETTINGS = "settings"

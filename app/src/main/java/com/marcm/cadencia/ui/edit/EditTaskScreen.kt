@@ -10,13 +10,20 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.IntrinsicSize
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.ime
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.foundation.layout.union
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -75,6 +82,8 @@ fun EditTaskScreen(
     val context = LocalContext.current
     var showCreateDomain by remember { mutableStateOf(false) }
 
+    val systemBars = WindowInsets.systemBars.asPaddingValues()
+
     Box(
         Modifier
             .fillMaxSize()
@@ -84,7 +93,12 @@ fun EditTaskScreen(
             Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(start = 18.dp, end = 18.dp, top = 40.dp, bottom = 110.dp),
+                .padding(
+                    start = 18.dp,
+                    end = 18.dp,
+                    top = systemBars.calculateTopPadding() + 12.dp,
+                    bottom = systemBars.calculateBottomPadding() + 96.dp
+                ),
             verticalArrangement = Arrangement.spacedBy(22.dp)
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -199,11 +213,14 @@ fun EditTaskScreen(
             )
         }
 
+        // El botón se queda sobre la barra de gestos y, si sale el teclado, sobre él:
+        // `union` toma el inset mayor de los dos, así no se suman cuando conviven.
         Box(
             Modifier
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
                 .background(MaterialTheme.colorScheme.background)
+                .windowInsetsPadding(WindowInsets.ime.union(WindowInsets.navigationBars))
                 .padding(horizontal = 18.dp, vertical = 14.dp)
         ) {
             Button(

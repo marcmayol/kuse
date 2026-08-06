@@ -12,9 +12,13 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -75,6 +79,11 @@ fun TaskDetailScreen(
     var confirmDelete by remember { mutableStateOf(false) }
     val item = state.item
 
+    // La barra de botones vive pegada al borde inferior, así que el contenido reserva su
+    // alto más lo que ocupen las barras del sistema: sin esto, la barra de gestos tapa
+    // los botones y el último bloque del scroll.
+    val systemBars = WindowInsets.systemBars.asPaddingValues()
+
     Box(
         Modifier
             .fillMaxSize()
@@ -84,7 +93,12 @@ fun TaskDetailScreen(
             Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
-                .padding(start = 18.dp, end = 18.dp, top = 40.dp, bottom = 116.dp),
+                .padding(
+                    start = 18.dp,
+                    end = 18.dp,
+                    top = systemBars.calculateTopPadding() + 12.dp,
+                    bottom = systemBars.calculateBottomPadding() + 96.dp
+                ),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -115,12 +129,14 @@ fun TaskDetailScreen(
             }
         }
 
-        // Barra inferior fija: editar + hecho hoy.
+        // Barra inferior fija: editar + hecho hoy. El fondo se pinta antes del inset para
+        // que cubra hasta el borde y el contenido no se vea colarse por debajo.
         Row(
             Modifier
                 .align(Alignment.BottomCenter)
                 .fillMaxWidth()
                 .background(MaterialTheme.colorScheme.background)
+                .navigationBarsPadding()
                 .padding(horizontal = 18.dp, vertical = 14.dp),
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically

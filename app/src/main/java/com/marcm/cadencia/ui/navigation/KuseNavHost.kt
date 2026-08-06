@@ -1,6 +1,7 @@
 package com.marcm.cadencia.ui.navigation
 
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.FormatListBulleted
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.LocalFireDepartment
@@ -24,6 +25,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.marcm.cadencia.ui.all.AllTasksScreen
 import com.marcm.cadencia.ui.detail.TaskDetailScreen
 import com.marcm.cadencia.ui.edit.EditTaskScreen
 import com.marcm.cadencia.ui.lock.PinSetupScreen
@@ -41,6 +43,7 @@ private data class TopDest(val route: String, val label: String, val icon: Image
 
 private val topDestinations = listOf(
     TopDest(Routes.TODAY, "Hoy", Icons.Filled.Today),
+    TopDest(Routes.ALL, "Todas", Icons.AutoMirrored.Filled.FormatListBulleted),
     TopDest(Routes.PLAN, "Plan", Icons.Filled.CalendarMonth),
     TopDest(Routes.STREAKS, "Rachas", Icons.Filled.LocalFireDepartment),
     TopDest(Routes.SETTINGS, "Ajustes", Icons.Filled.Tune)
@@ -110,6 +113,13 @@ fun KuseNavHost(startDestination: String) {
 
             composable(Routes.TODAY) {
                 TodayScreen(
+                    contentPadding = innerPadding,
+                    onTaskClick = { id -> navController.navigate(Routes.detail(id)) }
+                )
+            }
+
+            composable(Routes.ALL) {
+                AllTasksScreen(
                     contentPadding = innerPadding,
                     onTaskClick = { id -> navController.navigate(Routes.detail(id)) }
                 )
